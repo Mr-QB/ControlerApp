@@ -17,7 +17,7 @@ Dự án này nhằm phát triển một ứng dụng để truyền tín hiệu
     ```pip install PythonApp\requirements.txt```
     * Chạy Python source: ```python3 PythonApp/main.py```
 * Demo:
-![Demo Python App]([VideoDemo\PythonApp.gif](https://github.com/Mr-QB/ControlerApp/blob/main/VideoDemo/)PythonApp.gif)
+![Demo Python App]([VideoDemo\PythonApp.gif](https://github.com/Mr-QB/ControlerApp/blob/main/VideoDemo/PythonApp.gif)
 
 #### Ứng dụng Android (Kotlin)
 * Source: [Tại đây](AndroidApp\app\src\main\java\com\example\controlerapp\MainActivity.kt)
@@ -27,5 +27,6 @@ Dự án này nhằm phát triển một ứng dụng để truyền tín hiệu
     * Nhận tín hiệu từ ứng dụng máy tính.
     * Xử lý và diễn giải các tín hiệu nhận được.
     * Hiển thị các tínJ hiệu nhận được.
-* Demo: ![Demo Android App](https://github.com/Mr-QB/ControlerApp/blob/main/VideoDemo/AndroidApp.gif)
+* Demo:
+*  ![Demo Android App](https://github.com/Mr-QB/ControlerApp/blob/main/VideoDemo/AndroidApp.gif)
 
