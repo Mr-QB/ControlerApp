@@ -1,7 +1,7 @@
 import json
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsTextItem
+from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPainter, QColor, QFont, QPen
 import pygame
 from DataSocket import *
@@ -18,6 +18,9 @@ class PS3ControllerWidget(QWidget):
         self.host = "192.168.1.6"
         self.port = 12345
 
+        self.axes = [0.0, 0.0, 0.0, 0.0]
+        self.bumperButtonStates = [0.0, 0.0]
+
     def initUI(self):
         self.setMinimumSize(800, 600)
         self.setWindowTitle('PS3 Controller')
@@ -27,7 +30,6 @@ class PS3ControllerWidget(QWidget):
         self.timer.timeout.connect(self.update)
         self.timer.start(25)  # Update every 50 milliseconds
 
-        self.axes = [0.0, 0.0, 0.0, 0.0]
         self.radius = 100
 
     def center(self):
@@ -65,7 +67,6 @@ class PS3ControllerWidget(QWidget):
         font = QFont("Arial", 9)  # Example: Arial, 12px, Bold
         painter.setFont(font)
 
-        
         if value < 0:
             painter.drawText(x_position - bar_width / 2 - 11, bar_height, 35, 10, Qt.AlignCenter, chart_name)
         else:
@@ -94,16 +95,69 @@ class PS3ControllerWidget(QWidget):
         painter.setPen(QPen(QColor(56, 56, 56)))
         painter.drawLine(point_position[0], point_position[1], 0, 0)
 
+    # def drawSquare(painter, position, size, text, intensity):
+
+    # Square position and size
+    # x, y = position
+    # w, h = size
+
+    # Calculate color based on lightness
+    # gray = int(255 * intensity)
+    # color = QColor(gray, gray, gray)
+
+    # Draw a square
+    # painter.setBrush(color)
+    # painter.drawRect(x, y, w, h)
+
+    # Draw letters inside the square
+    # textItem = QGraphicsTextItem(text)
+    # textItem.setFont(QFont("Arial", 10))
+    # textItem.setDefaultTextColor(QColor(255 - gray, 255 - gray, 255 - gray))
+    # textItem.setPos(x + 5, y + 5)
+    # painter.drawText(textItem.boundingRect(), Qt.AlignCenter, text)
+
+    def updateEventJoystick(self):
+        self.axes = [self.joystick.get_axis(i) for i in
+                     range(self.joystick.get_numaxes())]  # Update the status of joystick axes
+        self.bumperButtonStates[0] = self.joystick.get_button(4)  # Status of Left Bumper
+        self.bumperButtonStates[1] = self.joystick.get_button(5)  # Status of Right Bumper
+
+    def drawSquare(self, painter, square_position, square_size, square_text, square_intensity):
+        x, y = square_position
+        w, h = square_size
+
+        # Calculate color based on lightness
+        gray = 255 - int(255 * square_intensity)
+        color = QColor(gray, gray, gray)
+        painter.setBrush(color)
+        painter.drawRect(x, y, w, h)
+
+        # Draw text inside the square
+        text_font = QFont("Arial", 12)
+        text_width = painter.fontMetrics().boundingRect(square_text).width() * 2  # Measure the size of the text
+        text_height = painter.fontMetrics().boundingRect(square_text).height() * 2
+        text_x = x + (w - text_width) / 2  # Calculate the position to center the text
+        text_y = y + (h - text_height) / 2
+        painter.setFont(text_font)
+        painter.setPen(QColor(98, 192, 133))  # Set text color based on background intensity
+        painter.drawText(text_x, text_y, text_width, text_height, Qt.AlignCenter, square_text)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        # Update position based on Axes
-        self.axes = [self.joystick.get_axis(i) for i in range(self.joystick.get_numaxes())]
+        # Update position based on Axes & button status
+        self.updateEventJoystick()
 
         # Send the data stored in self.axes to the connected client through the data socket.
-        self.sentDataToSocket(self.axes)
+        # self.sentDataToSocket(self.axes + self.bumperButtonStates)
+
+        self.drawSquare(painter, (self.width() * 1 / 7, self.height() * 2 / 8), (60, 30), "L1",
+                        self.bumperButtonStates[0])
+        self.drawSquare(painter, (self.width() * 2 / 7, self.height() * 2 / 8), (60, 30), "L2", self.axes[4])
+        self.drawSquare(painter, (self.width() * 4.7 / 7, self.height() * 2 / 8), (60, 30), "R1",
+                        self.bumperButtonStates[1])
+        self.drawSquare(painter, (self.width() * 5.5 / 7, self.height() * 2 / 8), (60, 30), "R2", self.axes[5])
 
         # Draw first circle
         circle_position = (self.width() / 4, self.height() / 2)
@@ -123,6 +177,8 @@ class PS3ControllerWidget(QWidget):
         circle_color = QColor(0, 0, 255, 127)
         point_position = (self.radius * self.axes[2], self.radius * self.axes[3])
         self.drawCircle(painter, circle_position, circle_color, point_position)
+
+        # self.drawSquare(painter, square_position, square_size, square_text, square_intensity)
 
     def sentDataToSocket(self, data):
         try:
