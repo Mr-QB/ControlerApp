@@ -161,24 +161,94 @@ class UIView(context: Context) : View(context) {
         if (value < 0) {
             canvas.drawText(
                 chartName,
-                xPosition - barWidth / 2 - textWidth/1.5f,
+                xPosition - barWidth / 2 - textWidth / 1.5f,
                 yPosition + barHeight + 15,
                 paint
             )
         } else {
             canvas.drawText(
                 chartName,
-                xPosition - barWidth / 2 - textWidth/1.5f,
+                xPosition - barWidth / 2 - textWidth / 1.5f,
                 yPosition - barHeight,
                 paint
             )
         }
     }
 
+    fun drawSquare(
+        canvas: Canvas,
+        squarePosition: Pair<Float, Float>,
+        squareSize: Pair<Float, Float>,
+        squareText: String,
+        squareIntensity: Float
+    ) {
+        val (x, y) = squarePosition
+        val (w, h) = squareSize
+
+        // Calculate color based on intensity
+        val gray = 255 - (255 * squareIntensity).toInt()
+        val color = Color.rgb(gray, gray, gray)
+        paint.color = color
+
+        // Draw square
+        canvas.drawRect(x, y, x + w, y + h, paint)
+
+        // Draw border
+        paint.color = Color.rgb(98, 192, 133)
+        paint.strokeWidth = 2f
+        paint.style = Paint.Style.STROKE
+        canvas.drawRect(x, y, x + w, y + h, paint)
+
+        // Set up text
+        paint.color = Color.rgb(98, 192, 133) // Set text color
+        paint.textSize = 24f // Set text size
+        paint.textAlign = Paint.Align.CENTER // Set text alignment to center
+        paint.style = Paint.Style.FILL
+
+        // Calculate text position
+        val textX = x + w / 2
+        val textY = y + h / 2 - (paint.descent() + paint.ascent()) / 2 // Adjust text baseline
+
+        // Draw text
+        canvas.drawText(squareText, textX, textY, paint)
+    }
+
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
         val circleRadius = Math.min(width, height) / 4f
+
+
+        drawSquare( // Draw the first square - L1
+            canvas,
+            Pair(width * 1 / 7f, height * 1 / 7f),
+            Pair(100f, 60f),
+            "L1",
+            (axesData.values.getOrNull(6)?.toFloat() ?: 0f)
+        )
+        drawSquare( // Draw the second square - L2
+            canvas,
+            Pair(width * 2 / 7f, height * 1 / 7f),
+            Pair(100f, 60f),
+            "L2",
+            (axesData.values.getOrNull(4)?.toFloat() ?: 0f)
+        )
+        drawSquare( // Draw the third square - R1
+            canvas,
+            Pair(width * 5 / 7f, height * 1 / 7f),
+            Pair(100f, 60f),
+            "L1",
+            (axesData.values.getOrNull(7)?.toFloat() ?: 0f)
+        )
+        drawSquare( // Draw the fourth square - R2
+            canvas,
+            Pair(width * 6 / 7f, height * 1 / 7f),
+            Pair(100f, 60f),
+            "L2",
+            (axesData.values.getOrNull(5)?.toFloat() ?: 0f)
+        )
+
 
         val firstCircleColor = Color.argb(127, 255, 0, 0)
         drawCircle(
