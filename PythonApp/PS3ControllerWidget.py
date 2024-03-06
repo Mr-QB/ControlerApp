@@ -1,12 +1,19 @@
 import json
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGraphicsTextItem
-from PyQt5.QtCore import Qt, QTimer, QRectF
+from PyQt5.QtCore import Qt, QTimer, QRectF, QThread, pyqtSignal
 from PyQt5.QtGui import QPainter, QColor, QFont, QPen
 import pygame
 from DataSocket import *
 import threading
 
+
+class PaintThread(QThread):
+    paintEventSignal = pyqtSignal()
+    def run(self):
+        while True:
+            self.paintEventSignal.emit()
+            self.msleep(30)  # Delay for 30 milliseconds
 
 class PS3ControllerWidget(QWidget):
     def __init__(self, parent=None):
@@ -26,9 +33,12 @@ class PS3ControllerWidget(QWidget):
         self.setWindowTitle('PS3 Controller')
         self.center()
 
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update)
-        self.timer.start(25)  # Update every 50 milliseconds
+        # Create an instance of the PaintThread
+        self.paintThread = PaintThread()
+        self.paintThread.paintEventSignal.connect(self.updateEvent)
+
+        # Start the thread
+        self.paintThread.start()
 
         self.radius = 100
 
@@ -95,27 +105,6 @@ class PS3ControllerWidget(QWidget):
         painter.setPen(QPen(QColor(56, 56, 56)))
         painter.drawLine(point_position[0], point_position[1], 0, 0)
 
-    # def drawSquare(painter, position, size, text, intensity):
-
-    # Square position and size
-    # x, y = position
-    # w, h = size
-
-    # Calculate color based on lightness
-    # gray = int(255 * intensity)
-    # color = QColor(gray, gray, gray)
-
-    # Draw a square
-    # painter.setBrush(color)
-    # painter.drawRect(x, y, w, h)
-
-    # Draw letters inside the square
-    # textItem = QGraphicsTextItem(text)
-    # textItem.setFont(QFont("Arial", 10))
-    # textItem.setDefaultTextColor(QColor(255 - gray, 255 - gray, 255 - gray))
-    # textItem.setPos(x + 5, y + 5)
-    # painter.drawText(textItem.boundingRect(), Qt.AlignCenter, text)
-
     def updateEventJoystick(self):
         self.axes = [self.joystick.get_axis(i) for i in
                      range(self.joystick.get_numaxes())]  # Update the status of joystick axes
@@ -150,14 +139,17 @@ class PS3ControllerWidget(QWidget):
         self.updateEventJoystick()
 
         # Send the data stored in self.axes to the connected client through the data socket.
-        # self.sentDataToSocket(self.axes + self.bumperButtonStates)
+        self.sentDataToSocket(self.axes + self.bumperButtonStates)
+        self.print_thread_count() # Check thread
 
         self.drawSquare(painter, (self.width() * 1 / 7, self.height() * 2 / 8), (60, 30), "L1",
-                        self.bumperButtonStates[0])
-        self.drawSquare(painter, (self.width() * 2 / 7, self.height() * 2 / 8), (60, 30), "L2", self.axes[4])
+                        self.bumperButtonStates[0])  # Draw the first square - L1
+        self.drawSquare(painter, (self.width() * 2 / 7, self.height() * 2 / 8), (60, 30), "L2",
+                        self.axes[4])  # Draw the second square - L2
         self.drawSquare(painter, (self.width() * 4.7 / 7, self.height() * 2 / 8), (60, 30), "R1",
-                        self.bumperButtonStates[1])
-        self.drawSquare(painter, (self.width() * 5.5 / 7, self.height() * 2 / 8), (60, 30), "R2", self.axes[5])
+                        self.bumperButtonStates[1])  # Draw the third square - R1
+        self.drawSquare(painter, (self.width() * 5.5 / 7, self.height() * 2 / 8), (60, 30), "R2",
+                        self.axes[5])  # Draw the fourth square - R2
 
         # Draw first circle
         circle_position = (self.width() / 4, self.height() / 2)
@@ -180,18 +172,19 @@ class PS3ControllerWidget(QWidget):
 
         # self.drawSquare(painter, square_position, square_size, square_text, square_intensity)
 
+    def print_thread_count(self):
+        thread_count = threading.active_count()
+        print(f"Current number of threads: {thread_count}")
+
     def sentDataToSocket(self, data):
-        try:
-            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket
-            client_socket.connect((self.host, self.port))  # Connect to the server
-            data_str = json.dumps(data)  # Convert to json
-            client_socket.sendall(data_str.encode())  # Send data
-            # # Receive response (if any)
-            # try:
-            #     response = client_socket.recv(1024)
-            #     print(f"Received response from server: {response.decode()}")
-            # except socket.timeout:
-            #     print("Timeout occurred while receiving response from server.")
-            client_socket.close()  # Close the connection
-        except Exception as e:
-            print(f"An error occurred while sending data: {e}")
+            try:
+                client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket
+                client_socket.connect((self.host, self.port))  # Connect to the server
+                data_str = json.dumps(data)  # Convert to json
+                client_socket.sendall(data_str.encode())  # Send data
+                client_socket.close()  # Close the connection
+            except Exception as e:
+                print(f"An error occurred while sending data: {e}")
+
+    def updateEvent(self):
+        self.update()
