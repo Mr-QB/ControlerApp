@@ -1,34 +1,33 @@
-## Mô tả Dự án: Truyền Tín Hiệu từ Analog Stick qua Socket
-### Tổng Quan
-Dự án này nhằm phát triển một ứng dụng để truyền tín hiệu từ 2 cần điều khiển analog thông qua một cổng socket tới một ứng dụng Android. Ứng dụng trên máy tính sẽ được phát triển bằng Python với giao diện PyQt, trong khi ứng dụng Android sẽ được phát triển bằng Kotlin.
+## Project Description: Signal Transmission from Analog Stick via Socket
+### Overview
+This project aims to develop an application to transmit signals from 2 analog control sticks through a socket port to an Android application. The computer application will be developed using Python with PyQt interface, while the Android application will be developed using Kotlin.
 
-### Các Thành Phần
-#### Ứng dụng Trên Máy Tính (Python + PyQt)
-* Ngôn Ngữ: Python
-* Source: [Tại đây](PythonApp/main.py)
-* Framework GUI: PyQt
-* Chức Năng:
-    * Đọc tín hiệu từ 2 cần điều khiển analog.
-    * Hiển thị trực quan dữ liệu từ 2 cần điều khiển.
-    * Thiết lập kết nối socket.
-    * Truyền tín hiệu qua cổng socket.
-* Triển khai:
-    * Cập nhật các thư viện:
-    ```pip install PythonApp\requirements.txt```
-    * Chạy Python source: ```python3 PythonApp/main.py```
+### Components
+#### Computer Application (Python + PyQt)
+* Language: Python
+* Source: [Here](PythonApp/main.py)
+* GUI Framework: PyQt
+* Features:
+    * Read signals from 2 analog control sticks.
+    * Visually display data from 2 analog control sticks.
+    * Establish socket connection.
+    * Transmit signals through the socket port.
+* Deployment:
+    * Update libraries:
+    ```pip install -r PythonApp\requirements.txt```
+    * Run Python source: ```python3 PythonApp/main.py```
 * Demo:
 
 ![Demo Python App](https://github.com/Mr-QB/ControlerApp/blob/main/VideoDemo/PythonApp.gif)
 
-#### Ứng dụng Android (Kotlin)
-* Source: [Tại đây](AndroidApp\app\src\main\java\com\example\controlerapp\MainActivity.kt)
-* Ngôn Ngữ: Kotlin
-* Chức Năng:
-    * Kết nối tới cổng socket.
-    * Nhận tín hiệu từ ứng dụng máy tính.
-    * Xử lý và diễn giải các tín hiệu nhận được.
-    * Hiển thị các tínJ hiệu nhận được.
+#### Android Application (Kotlin)
+* Source: [Here](AndroidApp\app\src\main\java\com\example\controlerapp\MainActivity.kt)
+* Language: Kotlin
+* Features:
+    * Connect to the socket port.
+    * Receive signals from the computer application.
+    * Process and interpret received signals.
+    * Display received signals.
 * Demo:
 
 ![Demo Android App](https://github.com/Mr-QB/ControlerApp/blob/main/VideoDemo/AndroidApp.gif)
-
